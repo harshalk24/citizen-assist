@@ -279,14 +279,14 @@ export default function ChatMessage({ message, citizenId, onAction, onSendMessag
       className={`flex ${isAgent ? "justify-start" : "justify-end"} group animate-msg-in`}
       data-tour={dataTour}
     >
-      <div className={`max-w-[80%] ${isAgent ? "space-y-2" : ""}`}>
+      <div className={`max-w-[85%] ${isAgent ? "space-y-2" : ""}`}>
         {isAgent && (
           <div className="text-[11px] text-gray-400 px-1 mb-1">{tr.chat.agentName}</div>
         )}
 
         <div className={`relative rounded-2xl px-4 py-3 text-sm leading-relaxed ${
           isAgent
-            ? "bg-white border border-gray-200 text-gray-800 rounded-tl-sm shadow-sm"
+            ? "bg-white border border-gray-200 border-l-2 border-l-[#E6F1FB] text-gray-800 rounded-tl-sm shadow-sm"
             : "bg-[#185FA5] text-white rounded-tr-sm"
         }`}>
           {isAgent

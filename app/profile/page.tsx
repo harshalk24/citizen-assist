@@ -115,6 +115,46 @@ export default function ProfilePage() {
 
       <div className="max-w-lg mx-auto px-4 py-5 space-y-3 pb-10">
 
+        {/* ── PROFILE COMPLETION ─────────────────── */}
+        {(() => {
+          const fields = [
+            { key: "firstName",  label: lang === "es" ? "Nombre"      : "Name",       filled: !!firstName },
+            { key: "email",      label: "Email",                                        filled: !!email },
+            { key: "country",    label: lang === "es" ? "País"        : "Country",    filled: true },
+            { key: "employment", label: lang === "es" ? "Empleo"      : "Employment", filled: !!employment && employment !== "any" },
+            { key: "lifeEvent",  label: lang === "es" ? "Situación"   : "Situation",  filled: !!lifeEvent },
+            { key: "language",   label: lang === "es" ? "Idioma"      : "Language",   filled: true },
+          ]
+          const filledCount = fields.filter(f => f.filled).length
+          const pct = Math.round((filledCount / fields.length) * 100)
+          const missing = fields.filter(f => !f.filled)
+          return (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-4 mb-1">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">
+                  {lang === "es" ? "Perfil completo" : "Profile complete"}
+                </span>
+                <span className="text-sm font-semibold text-[#185FA5]">{pct}%</span>
+              </div>
+              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${pct}%`,
+                    background: pct === 100 ? "#10b981" : "#185FA5",
+                  }}
+                />
+              </div>
+              {missing.length > 0 && (
+                <p className="text-xs text-gray-400 mt-1.5">
+                  {lang === "es" ? "Completá: " : "Complete: "}
+                  {missing.map(f => f.label).join(", ")}
+                </p>
+              )}
+            </div>
+          )
+        })()}
+
         {/* ── BASICS ─────────────────────────────── */}
         <SectionLabel>Basic info</SectionLabel>
 

@@ -50,6 +50,8 @@ function ChatContent() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const hasAutoSentRef = useRef(false)
+  // Prevent welcome-message effect from wiping messages after conversation starts
+  const hasStartedConversationRef = useRef(false)
 
   // Auto-send a message from ?msg= query param (used by plan page "I don't understand" button)
   // Fires once after the welcome message is set and the component is ready.
@@ -73,8 +75,9 @@ function ChatContent() {
     }
   }, [])
 
-  // Build welcome message based on context
+  // Build welcome message based on context — skip if conversation already started
   useEffect(() => {
+    if (hasStartedConversationRef.current) return
     const preload = searchParams.get("context")
 
     if (preload) {
@@ -172,6 +175,7 @@ function ChatContent() {
     if (detectedLifeEvent)  localStorage.setItem("ca_detected_life_event",  detectedLifeEvent)
     if (detectedEmployment) localStorage.setItem("ca_detected_employment",   detectedEmployment)
 
+    hasStartedConversationRef.current = true
     const userMsg: Message = { id: generateId(), role: "user", content: text }
     const updatedMessages = [...messages, userMsg]
     setMessages(updatedMessages)

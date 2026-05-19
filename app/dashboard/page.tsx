@@ -1,24 +1,39 @@
 "use client"
 
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { useLang } from "@/contexts/LanguageContext"
 import { useCitizen } from "@/contexts/CitizenContext"
 import { t } from "@/lib/i18n"
-import { lookupServices, services as allServices } from "@/lib/kb"
+import { lookupServices, services as kbServices } from "@/lib/kb"
 import { Gift, ListChecks, Calendar, MessageSquare, AlertCircle, ChevronRight, Loader2 } from "lucide-react"
 
 function getDaysLeft(dueDate: string) {
   return Math.ceil((new Date(dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
 }
 
+const safeDivide = (a: number, b: number) => b === 0 ? 0 : Math.round((a / b) * 100)
+
 export default function DashboardPage() {
   const router = useRouter()
   const { lang } = useLang()
-  const { citizen, isLoading } = useCitizen()
+  const { citizen, isLoading, refresh } = useCitizen()
   const tr = t(lang)
 
   const hour = new Date().getHours()
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        refresh()
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+    }
+  }, [])
 
   if (isLoading) {
     return (
@@ -40,11 +55,17 @@ export default function DashboardPage() {
   })
 
   const entitlements = citizen.entitlements || []
-  const claimedCount = entitlements.filter(e => e.status === "received").length
-  const planSteps = citizen.planSteps || []
-  const doneSteps = planSteps.filter(s => s.status === "done")
-  const nextStep = planSteps.find(s => s.status !== "done")
 
+  // 2A: only count status === "received" as claimed
+  const claimedCount = entitlements.filter(e => e.status === "received").length
+  const totalEntitlements = entitlements.length
+
+  // 2B: plan steps from citizen.planSteps
+  const planSteps = citizen.planSteps || []
+  const doneStepsCount = planSteps.filter((s: any) => s.status === "done").length
+  const nextStep = planSteps.find((s: any) => s.status !== "done") as any
+
+  // 2C: deadlines met vs total
   const deadlines = citizen.deadlines || []
   const activeDeadlines = deadlines
     .filter(d => !d.completed)
@@ -54,11 +75,17 @@ export default function DashboardPage() {
 
   const urgentCount = activeDeadlines.filter(d => d.daysLeft <= 30).length
 
-  // Total value estimate
-  const totalValueMonthly = contextServices.reduce((sum, s) => {
-    if (!s.amount) return sum
-    const match = s.amount.match(/\$(\d+)/)
-    return sum + (match ? parseInt(match[1]) : 0)
+  // 2D: total value from KB — monthly amounts only, based on actual entitlements
+  const totalValueMonthly = entitlements.reduce((sum, e) => {
+    const kb = kbServices.find(s => s.id === e.serviceId)
+    if (!kb?.amount) return sum
+    const match = kb.amount.match(/\$?([\d,]+)/)
+    if (!match) return sum
+    const num = parseInt(match[1].replace(",", ""))
+    if (kb.amount.includes("/mes") || kb.amount.includes("/mo")) {
+      return sum + num
+    }
+    return sum
   }, 0)
 
   const deadlineColor = (days: number) => {
@@ -112,13 +139,14 @@ export default function DashboardPage() {
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-4">
           <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{tr.dashboard.progress.title}</h2>
 
-          {/* Benefits claimed */}
+          {/* Benefits claimed — only "received" counts */}
           <ProgressRow
             icon={<Gift size={14} className="text-[#185FA5]" />}
             label={tr.dashboard.progress.benefitsClaimed}
-            sub={tr.dashboard.progress.benefitsUnclaimed(contextServices.length - claimedCount)}
+            sub={tr.dashboard.progress.benefitsUnclaimed(totalEntitlements - claimedCount)}
             value={claimedCount}
-            total={contextServices.length}
+            total={totalEntitlements}
+            pct={safeDivide(claimedCount, totalEntitlements)}
             color="bg-[#185FA5]"
           />
 
@@ -127,8 +155,9 @@ export default function DashboardPage() {
             icon={<ListChecks size={14} className="text-emerald-600" />}
             label={tr.dashboard.progress.planSteps}
             sub={nextStep ? tr.dashboard.progress.nextStep(nextStep.serviceName || nextStep.serviceId) : ""}
-            value={doneSteps.length}
-            total={planSteps.length || 8}
+            value={doneStepsCount}
+            total={planSteps.length}
+            pct={safeDivide(doneStepsCount, planSteps.length)}
             color="bg-emerald-500"
           />
 
@@ -138,18 +167,30 @@ export default function DashboardPage() {
             label={tr.dashboard.progress.deadlinesMet}
             sub={tr.dashboard.progress.deadlinesComingUp(activeDeadlines.length)}
             value={metDeadlines.length}
-            total={deadlines.length || 3}
+            total={deadlines.length}
+            pct={safeDivide(metDeadlines.length, deadlines.length)}
             color="bg-amber-500"
           />
 
           {/* Total value */}
-          {totalValueMonthly > 0 && (
-            <div className="pt-2 border-t border-gray-50">
-              <p className="text-xs text-gray-500">{tr.dashboard.progress.totalValue}</p>
-              <p className="text-2xl font-bold text-gray-900 mt-0.5">${totalValueMonthly}<span className="text-sm font-normal text-gray-400">/mo</span></p>
-              <p className="text-xs text-gray-400">{tr.dashboard.progress.totalValueSub}</p>
-            </div>
-          )}
+          <div className="pt-2 border-t border-gray-50">
+            <p className="text-xs text-gray-500">{tr.dashboard.progress.totalValue}</p>
+            {totalValueMonthly > 0 ? (
+              <>
+                <p className="text-2xl font-bold text-gray-900 mt-0.5">
+                  ${totalValueMonthly.toLocaleString()}
+                  <span className="text-sm font-normal text-gray-400">/mo</span>
+                </p>
+                <p className="text-xs text-gray-400">{tr.dashboard.progress.totalValueSub}</p>
+              </>
+            ) : (
+              <p className="text-sm text-gray-400 mt-0.5">
+                {lang === "es"
+                  ? "Iniciá una conversación para ver tus beneficios disponibles"
+                  : "Start a conversation to see your available benefits"}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* RIGHT — Deadlines */}
@@ -229,15 +270,15 @@ export default function DashboardPage() {
   )
 }
 
-function ProgressRow({ icon, label, sub, value, total, color }: {
+function ProgressRow({ icon, label, sub, value, total, pct, color }: {
   icon: React.ReactNode
   label: string
   sub: string
   value: number
   total: number
+  pct: number
   color: string
 }) {
-  const pct = total > 0 ? Math.round((value / total) * 100) : 0
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
@@ -286,7 +327,6 @@ function EmptyDashboard({ tr, lang, router, firstName, hour }: any) {
       </div>
 
       <div className="px-4 py-6 max-w-lg mx-auto">
-        {/* CTA Card */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
           <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mx-auto mb-4">
             <MessageSquare size={22} className="text-[#185FA5]" />
@@ -302,7 +342,6 @@ function EmptyDashboard({ tr, lang, router, firstName, hour }: any) {
           </button>
         </div>
 
-        {/* Preview rows */}
         <div className="mt-6 space-y-3">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{tr.dashboard.empty.previewTitle}</p>
           {[
