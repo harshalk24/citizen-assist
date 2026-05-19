@@ -59,11 +59,12 @@ export default function OnboardingPage() {
   const [department, setDepartment] = useState("")
   const [saving,     setSaving]     = useState(false)
 
-  // Derive life event for KB lookup (health / general → any
-  const lifeEventForKB = ["new-baby","job-loss","start-business"].includes(situation)
-    ? situation : "new-baby"  // fallback to show some results
+  // Only show benefits when a concrete life event is selected (not "general" / "health")
+  const lifeEventForKB = ["new-baby", "job-loss", "start-business"].includes(situation)
+    ? situation
+    : null
 
-  const benefits = situation
+  const benefits = lifeEventForKB
     ? lookupServices({ country: "SV", lifeEvent: lifeEventForKB, employment: employment || "any" })
     : []
 
@@ -362,7 +363,7 @@ export default function OnboardingPage() {
                   <h1 className="text-xl font-bold text-gray-900">
                     {name}, I found {benefits.length > 0 ? benefits.length : "several"} benefits!
                   </h1>
-                  <p className="text-gray-400 text-xs">Here's what your government owes you:</p>
+                  <p className="text-gray-400 text-xs">Here are the benefits you qualify for:</p>
                 </div>
 
                 <div className="space-y-2">
