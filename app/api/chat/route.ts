@@ -84,6 +84,7 @@ export async function POST(req: Request) {
     : []
 
   // ── Persist entitlements so the Dashboard can read them ─────────────
+  // Fire-and-forget — don't block the stream.
   if (services.length > 0 && citizenId && citizenId !== "anonymous") {
     const entitlements = services.map(s => ({
       serviceId: s.id,
@@ -91,8 +92,7 @@ export async function POST(req: Request) {
       savedAt: new Date().toISOString(),
     }))
     ctx.entitlements = entitlements
-
-    await prisma.citizenContext.upsert({
+    prisma.citizenContext.upsert({
       where: { citizenId },
       create: {
         citizenId,
@@ -101,12 +101,8 @@ export async function POST(req: Request) {
         entitlementsJson: JSON.stringify(entitlements),
         updatedAt:        new Date(),
       },
-      update: {
-        entitlementsJson: JSON.stringify(entitlements),
-        lifeEvent:        ctx.profile.lifeEvent,
-        employment:       ctx.profile.employment,
-      },
-    })
+      update: { entitlementsJson: JSON.stringify(entitlements) },
+    }).catch(console.error)
   }
 
   // ── Classify query type using Gemini (intent, not keywords) ─────────

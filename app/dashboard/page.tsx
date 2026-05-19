@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { useLang } from "@/contexts/LanguageContext"
@@ -16,22 +15,10 @@ function getDaysLeft(dueDate: string) {
 export default function DashboardPage() {
   const router = useRouter()
   const { lang } = useLang()
-  const { citizen, isLoading, refresh } = useCitizen()
+  const { citizen, isLoading } = useCitizen()
   const tr = t(lang)
 
   const hour = new Date().getHours()
-
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        refresh()
-      }
-    }
-    document.addEventListener("visibilitychange", handleVisibilityChange)
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange)
-    }
-  }, [])
 
   if (isLoading) {
     return (

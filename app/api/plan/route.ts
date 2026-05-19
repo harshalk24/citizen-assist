@@ -9,10 +9,15 @@ async function savePlanToDB(
   services: any[],
   lifeEvent?: string
 ) {
+  // Flatten weeks → steps with week number for storage
+  const flatSteps = validatedPlan.weeks.flatMap((w: any) =>
+    w.steps.map((s: any) => ({ ...s, week: w.week, status: "not-started" }))
+  )
+
   await prisma.actionPlan.upsert({
-    where:  { citizenId },
-    create: { citizenId, planJson: JSON.stringify(validatedPlan), lifeEvent: lifeEvent || null },
-    update: { planJson: JSON.stringify(validatedPlan), lifeEvent: lifeEvent || null, updatedAt: new Date() },
+    where: { citizenId },
+    create: { citizenId, planJson: JSON.stringify(flatSteps), lifeEvent: lifeEvent || null },
+    update: { planJson: JSON.stringify(flatSteps), lifeEvent: lifeEvent || null },
   })
 
   // Create deadline records for steps that have a deadline

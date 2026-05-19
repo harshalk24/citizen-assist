@@ -40,34 +40,9 @@ export function CitizenProvider({ children }: { children: ReactNode }) {
         headers: { "x-citizen-id": citizenId }
       })
       if (res.ok) {
-        const raw = await res.json()
-        // Parse the nested API response into a flat CitizenContextData
-        const planData = raw.actionPlan?.planJson ? JSON.parse(raw.actionPlan.planJson) : null
-        const planSteps = planData?.weeks
-          ? planData.weeks.flatMap((w: any) =>
-              w.steps.map((s: any) => ({ ...s, week: w.week, status: s.status || "not-started" }))
-            )
-          : Array.isArray(planData) ? planData : []
-        const data: CitizenContextData = {
-          citizenId: raw.citizen.id,
-          profile: {
-            firstName:  raw.citizen.firstName || "there",
-            country:    raw.citizen.country,
-            employment: raw.context?.employment || "any",
-            lifeEvent:  raw.context?.lifeEvent  || "",
-            language:   (raw.citizen.language as "en" | "es") || "en",
-            email:      raw.citizen.email || undefined,
-          },
-          entitlements:        raw.context?.entitlementsJson ? JSON.parse(raw.context.entitlementsJson) : [],
-          planSteps,
-          deadlines:           raw.deadlines || [],
-          conversationSummary: raw.context?.conversationSummary || undefined,
-          lastUpdated:         new Date().toISOString(),
-          planUpdatedAt:       raw.actionPlan?.updatedAt,
-          planLifeEvent:       raw.actionPlan?.lifeEvent || undefined,
-        }
+        const data: CitizenContextData = await res.json()
         setCitizen(data)
-        return data
+        return data          // ← return fresh data so callers can use it immediately
       }
     } catch {
       // ignore
