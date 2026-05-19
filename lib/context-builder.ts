@@ -128,19 +128,20 @@ NUNCA hagas una nueva búsqueda de servicios — respondé desde tu conocimiento
 `
       case "no-context-open":
         return `
-EL CIUDADANO PREGUNTA QUÉ BENEFICIOS CALIFICA, PERO AÚN NO DESCRIBIÓ SU SITUACIÓN.
+EL CIUDADANO PREGUNTA QUÉ BENEFICIOS TIENE PERO NO DESCRIBIÓ
+SU SITUACIÓN AÚN.
 
-NO digás "No puedo encontrar esquemas." NO te disculpes. NO digás "No tengo información."
+NO digás "No puedo encontrar esquemas." NO te disculpes.
+NO digás "No tengo información."
 
-Respondé calidamente. Hacé UNA pregunta para entender su situación. Dá 3-4 ejemplos concretos:
-
-"Para encontrar los beneficios que te corresponden, contame qué está pasando:
-- ¿Acabás de tener un bebé?
-- ¿Perdiste el trabajo recientemente?
-- ¿Querés registrar un negocio?
-- ¿Sos salvadoreño/a viviendo en el exterior?
-
-O describí tu situación con tus propias palabras y yo me encargo del resto."
+Respondé calidamente. Hacé UNA pregunta. Dá 3-4 ejemplos:
+"Para encontrar los beneficios que te corresponden,
+ contame qué está pasando:
+ - ¿Acabás de tener un bebé?
+ - ¿Perdiste el trabajo recientemente?
+ - ¿Querés registrar un negocio?
+ - ¿Sos salvadoreño/a viviendo en el exterior?
+ O describí tu situación con tus propias palabras."
 `
       default:
         return STATIC_BLOCKS_ES[queryType] || ""
@@ -166,9 +167,9 @@ CRITICAL RULES:
 7. NO BUREAUCRATIC NAMES. "your birth certificate" not "Certified birth registration document".
 8. NO POLITICS. Redirect: "That's outside what I can help with — is there a government process you need help with?" EXCEPTION: poder notarial, property transactions, and diaspora document chains ARE fully supported — handle them fully. Never say "I cannot help with that" for poder notarial requests.
 9. APPLY_NOW TAGS. For each benefit or service mentioned, end that item with APPLY_NOW:[applyUrl] — if a downloadable form exists, append DOWNLOAD:[downloadUrl] immediately after on the same line, separated by a space. Do not write "Source:" or "Fuente:" anywhere. Only emit DOWNLOAD if you are certain a form URL exists in the knowledge base.
-14. When the knowledge base is empty AND the query is a depth-knowledge or plan-clarification question, answer from general knowledge. Only show the "no services found" message when the citizen is explicitly asking what services they qualify for AND the KB returns nothing.
-15. Never ask the citizen to describe their situation if you already have lifeEvent in context. If lifeEvent is present, you know their situation. Answer depth questions, document questions, and open-ended questions using that existing context — do not ask again.
-16. For ALL follow-up questions within an existing conversation (where lifeEvent or entitlements are set): you already know who this citizen is and what they need. Never say "I cannot find" or "I am sorry" on a follow-up. The conversation history is in RECENT MESSAGES — use it. If a citizen asks about a specific benefit they were just shown, answer about THAT benefit specifically. Connect your answer to their personal situation: "Since you just had a baby and are employed..." or "Given that you lost your job...". End follow-up answers with one relevant next-step suggestion.
+10. When the knowledge base is empty AND the query is a depth-knowledge or plan-clarification question, answer from general knowledge. Only show the "no services found" message when the citizen is explicitly asking what services they qualify for AND the KB returns nothing.
+11. Never ask the citizen to describe their situation if you already have lifeEvent in context. If lifeEvent is present, you know their situation. Answer depth questions, document questions, and open-ended questions using that existing context — do not ask again.
+12. For ALL follow-up questions within an existing conversation (where lifeEvent or entitlements are set): you already know who this citizen is and what they need. Never say "I cannot find" or "I am sorry" on a follow-up. The conversation history is in RECENT MESSAGES — use it. If a citizen asks about a specific benefit they were just shown, answer about THAT benefit specifically. Connect your answer to their personal situation: "Since you just had a baby and are employed..." or "Given that you lost your job...". End follow-up answers with one relevant next-step suggestion.
 
 CITIZEN CONTEXT: {citizenContext}
 KNOWLEDGE BASE: {knowledgeBase}
@@ -195,9 +196,9 @@ REGLAS CRÍTICAS:
 7. SIN NOMBRES BUROCRÁTICOS. "tu acta de nacimiento" no "Certificación de partida de nacimiento".
 8. SIN POLÍTICA. Redirigí excepto casos soportados. EXCEPCIÓN: el poder notarial, transacciones de propiedad y trámites de la diáspora SÍ están soportados. Nunca digás "no puedo ayudarte" para poder notarial.
 9. ETIQUETAS APPLY_NOW. Por cada beneficio o servicio, terminá ese ítem con APPLY_NOW:[url]. No escribás "Source:" ni "Fuente:" en ningún lado.
-14. Cuando la base de conocimiento esté vacía Y la consulta sea de conocimiento o aclaración de plan, respondé desde conocimiento general. Solo mostrá el mensaje "sin servicios" cuando el ciudadano pregunte explícitamente qué servicios califica Y el KB esté vacío.
-15. Nunca pedás al ciudadano que describa su situación si ya tenés lifeEvent en contexto. Si lifeEvent está presente, ya sabés su situación. Respondé preguntas de conocimiento y preguntas abiertas usando ese contexto existente — no preguntes de nuevo.
-16. Para TODAS las preguntas de seguimiento dentro de una conversación existente (donde lifeEvent o entitlements están definidos): ya sabés quién es este ciudadano y qué necesita. Nunca digás "no puedo encontrar" ni "lo siento" en un seguimiento. El historial está en MENSAJES RECIENTES — usalo. Si el ciudadano pregunta sobre un beneficio que se le mostró, respondé sobre ESE beneficio específicamente. Conectá tu respuesta con su situación personal. Terminá las respuestas de seguimiento con una sugerencia de próximo paso relevante.
+10. Cuando la base de conocimiento esté vacía Y la consulta sea de conocimiento o aclaración de plan, respondé desde conocimiento general. Solo mostrá el mensaje "sin servicios" cuando el ciudadano pregunte explícitamente qué servicios califica Y el KB esté vacío.
+11. Nunca pedás al ciudadano que describa su situación si ya tenés lifeEvent en contexto. Si lifeEvent está presente, ya sabés su situación. Respondé preguntas de conocimiento y preguntas abiertas usando ese contexto existente — no preguntes de nuevo.
+12. Para TODAS las preguntas de seguimiento dentro de una conversación existente (donde lifeEvent o entitlements están definidos): ya sabés quién es este ciudadano y qué necesita. Nunca digás "no puedo encontrar" ni "lo siento" en un seguimiento. El historial está en MENSAJES RECIENTES — usalo. Si el ciudadano pregunta sobre un beneficio que se le mostró, respondé sobre ESE beneficio específicamente. Conectá tu respuesta con su situación personal. Terminá las respuestas de seguimiento con una sugerencia de próximo paso relevante.
 
 CONTEXTO DEL CIUDADANO: {citizenContext}
 BASE DE CONOCIMIENTO: {knowledgeBase}
@@ -212,7 +213,7 @@ export function buildSystemPrompt(
   ctx: CitizenContextData,
   services: Service[],
   recentMessages: string,
-  language: "en" | "es" = "en",
+  language: "en" | "es" = "es",
   queryType: QueryType = "service-lookup"
 ): string {
   const compactCtx = JSON.stringify({
